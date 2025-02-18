@@ -20,8 +20,8 @@ class FillInBlankQuestion extends Question {
   }
 
   @override
-  void display() {
-    print('\n$stem');
+  String display() {
+    return '\n$stem';
   }
 
   @override

@@ -8,10 +8,10 @@ abstract class Question {
   Question(this.stem, this.type);
 
   bool checkResponse(Object response);
-  void display();
+  String display();
   bool isValidAnswer(String response);
 
-  // Delegates to specific subclasses
+  // Serialize the question to JSON
   static Question fromJson(Map<String, dynamic> json) {
     switch (json['type']) {
       case 1:

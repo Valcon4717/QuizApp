@@ -40,8 +40,7 @@ class TestController {
     Map<Question, String> userAnswers = {};
 
     while (index < questions.length) {
-      _view.displayQuestion(questions[index]);
-
+      _view.displayQuestion(questions[index], index);
       String userInput = _view.getUserNavigation();
 
       switch (userInput) {
@@ -52,7 +51,10 @@ class TestController {
           break;
         case "prev":
         case "p":
-          if (index > 0) index--;
+          if (index > 0) {
+            index--;
+            _view.displayCurrentAnswer(userAnswers[questions[index]], index);
+          }
           break;
         default:
         if (_isValidUserResponse(questions[index], userInput)) {
