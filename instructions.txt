@@ -1,0 +1,152 @@
+CS 4381/5381: TSE -- Cross-Platform Application Development, Spring 2025
+
+			   HOMEWORK 1: Dart
+                 (File $Date: 2024/11/30 02:09:46 $)
+
+Due: TBA
+
+This assignment may be completed individually or in pairs. If you work
+in a pair, you must submit a contribution form detailing each member's
+contributions.
+
+The goal of this assignment is to familiarize yourself with the Dart
+programming language. You will develop a console-based application,
+explore core Dart APIs (e.g., collections, I/O, and networking), and
+gain hands-on experience with software design principles.
+
+Develop a console-based Dart application [1] for quiz-based exam
+preparation. Your application must fulfill the following functional
+and non-functional requirements:
+
+R1. Maintain a pool of test questions. Questions can be of two types:
+
+    - Multiple-choice: Includes a probelm statement (stem) and a set of
+      answer options.
+    - Filll-in-blank: Includes a sentence or paragraph with a blank
+      space for the user to fill. A set of acceptable answers should
+      be defined.
+
+R2. Allow users to take practice tests by randomly selecting questions
+    from the pool based on the user's specified number of
+    questions. Your application should: 
+
+    - Display questions one at a time.  
+    - Prompt users for answers. 
+    - Grade the test and display scores after all questions are answered.
+
+R3. Populate the question pool using the following Web service:
+
+    URL: https://www.cs.utep.edu/cheon/cs4381/homework/quiz/
+    Protocol: GET
+    Required parameters
+      Name	Type	Description
+      quiz      String	Requested quiz (e.g., quiz01)
+    Response
+      Name	Type	Description
+      response	Boolean True if the request is accepted; false otherwise
+      reason    String  Error message if the response is false
+      quiz	String  JSON-encoded quiz consisting of questions 
+    Examples
+      https://www.cs.utep.edu/cheon/cs4381/homework/quiz?quiz=quiz99
+      {"response": false, "reason": "quiz99 not found"}
+
+      https://www.cs.utep.edu/cheon/cs4381/homework/quiz?quiz=quiz01
+      {"response": true, "quiz": { "name": "Quiz 01", "questions": [ 
+         { "type": 1, "stem": "Flutter ...", "answer": 1, 
+           "options": [ "true", "false" ]},
+         { "type": 2, "stem": "________ lets you ...",
+           "answer": ["Hot reload", "hot reloading"]},
+         ... ]}}
+
+    To retrieve all questions, start with quiz01 and increment until
+    the server responds with an error.
+
+R4. Implement the Model-View-Controller (MVC) design pattern
+    [2]. Ensure the model layer (business logic) is entirely
+    independent of the view/control layers. This design will enable
+    code reuse for creating a GUI version in HW2.
+
+R5. Document your code using Dartdoc comments [3].
+
+TASKS
+
+1. (10 points) Create a UML class diagram [4] to represent your
+   application's design. The diagram should include both model classes
+   and UI/Control classes (refer to R4), following a layered
+   architecture that ensures the business logic layer is fully
+   isolated from the presentation layer.
+
+   - Clearly depict the main components (classes) of your application,
+     highlighting their roles and relationships.
+
+   - Demonstrate the separation of concerns by ensuring model classes
+     (business logic) are entirely independent of UI/Control classes
+     (presentation layer).
+
+   - Define and include the key public operations for each class to
+     illustrate their responsibilities and functionality.
+
+   - Use appropriate labels, multiplicities, and directional
+     indicators for all associations, including aggregation and
+     composition relationships.
+
+   - Accompany the diagram with a brief description of each class,
+     summarizing its purpose and role within the application.
+
+2. (90 points) Develop your application based on the design.
+
+3. (10 bonus points) Enhance the user experience of your app by
+   implementing additional features such as:
+
+    - Allowing users to review incorrectly answered questions after
+      completing the test.
+
+    - Enabling navigation between questions (e.g., move to the
+      previous or next question).
+
+TESTING
+
+  Your code should compile and run correctly on Dart 3.5 or later
+  versions.
+
+SUBMISSION
+  Submit your work through Blackboard as a single ZIP file containing:
+
+  - UML class diagram with a description (PDF or DOCX).
+  - Contribution form (if applicable, PDF or DOCX).
+  - Source code: The Dart "src" directory in your project folder
+    (bin/main.dart and lib/*). Include only Dart source code files;
+    do not include other files such as build files or the entire
+    project folder.
+  - pubspec.yaml: List package dependencies and other metadata.
+
+  If you work in pairs, mention it in the submission, use both names
+  in the zip file name, and make only one submission.
+
+DEMO
+
+  You will need to present a 2-3 minute demo of your application to
+  the class or the course staff.
+
+GRADING
+
+  Your grade will be based on the quality of your design and the
+  clarity of your code. Excessively long code will be penalized, so
+  avoid code repetition. Your code should be well-documented using
+  Dartdoc comments and properly indented for easy readability.
+
+  Make sure to include your name in the comments of your source code.
+
+REFERENCES 
+
+  [1] "Write command-line apps," Dart.dev,
+      https://dart.dev/tutorials/server/cmdline
+
+  [2] Holger Gast, How to Use Objects, Addison-Wesley, 2016.
+      Sections 9.1 and 9.2. Ebook available from UTEP library.
+
+  [3] "Effective Dart: Documentation", Dart.dev,
+      https://dart.dev/effective-dart/documentation
+
+  [4] Martina Seidl, et al., UML@Classroom: An Introduction to
+      Object-Oriented Modeling, Springer, 2015. Ebook.
