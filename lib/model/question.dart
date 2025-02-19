@@ -8,9 +8,10 @@ abstract class Question {
   Question(this.stem, this.type);
 
   bool checkResponse(Object response);
+  bool isValidAnswer(String response); 
   String display();
-  bool isValidAnswer(String response);
-
+  String getCorrectAnswer();
+  
   // Serialize the question to JSON
   static Question fromJson(Map<String, dynamic> json) {
     switch (json['type']) {
