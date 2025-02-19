@@ -14,7 +14,6 @@ class MultipleChoiceQuestion extends Question {
   }
 
   @override
-  @override
   bool checkResponse(Object response) {
     if (response is int) {
       return response == correctAnswer;
@@ -25,13 +24,13 @@ class MultipleChoiceQuestion extends Question {
     return false;
   }
 
-
   @override
-  void display() {
-    print("\n$stem");
+  String display() {
+    StringBuffer displayString = StringBuffer("\n$stem\n");
     options.asMap().forEach((index, option) {
-      print('${index + 1}. $option');
+      displayString.writeln('  ${index + 1}. $option');
     });
+    return displayString.toString();
   }
 
   @override

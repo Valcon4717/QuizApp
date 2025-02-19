@@ -3,7 +3,9 @@ import '../model/question.dart';
 
 class TestView {
   void welcomeMessage() {
-    print("Welcome to the Quiz App!");
+    print('\n──────────────────────────────────────────────');
+    print("        \x1B[1;32m✨Welcome to the Quiz App!✨\x1B[0m");
+    print('──────────────────────────────────────────────');
   }
 
   void goodbyeMessage() {
@@ -11,22 +13,24 @@ class TestView {
   }
 
   void loadingMessage() {
-    print("Loading questions...");
+    print("\n\x1B[30mLoading questions...\x1B[0m\n");
   }
 
   void displayScore(int score, int total) {
     print("\nQuiz Complete! Your score: $score / $total");
   }
 
-  void displayQuestion(Question question) {
-    question.display();
+  void displayQuestion(Question question, int index) {
+    print('\n──────────────────────────────────────────────\n');
+    print('Question ${index + 1}: ${question.display()}');
   }
 
   void reviewIncorrectAnswers(List<Question> incorrectQuestions) {
     if (incorrectQuestions.isEmpty) return;
     print("\nReview Incorrect Answers:");
     for (var question in incorrectQuestions) {
-      displayQuestion(question);
+      print('\n──────────────────────────────────────────────\n');
+      print('Incorrect: ${question.display()}');
     }
   }
 
@@ -35,10 +39,14 @@ class TestView {
 
     while (numQuestions == null) {
       stdout.write(
-          "How many questions would you like to answer? (Max: $totalAvailableQuestions): ");
+          "How many questions would you like to answer?\n(Max: $totalAvailableQuestions, defaults 5 if you enter a space): ");
       String? input = stdin.readLineSync();
 
-      numQuestions = int.tryParse(input ?? "");
+      if (input == " ") {
+        numQuestions = 5;
+      } else {
+        numQuestions = int.tryParse(input ?? "");
+      }
 
       if (numQuestions == null ||
           numQuestions <= 0 ||
@@ -50,6 +58,12 @@ class TestView {
     }
 
     return numQuestions;
+  }
+
+  String displayCurrentAnswer(dynamic answer, int index) {
+    print('\n──────────────────────────────────────────────');
+    print("\n→ Current answer for question $index : $answer");
+    return answer.toString();
   }
 
   String getUserNavigation() {
