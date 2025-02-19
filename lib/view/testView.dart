@@ -9,7 +9,9 @@ class TestView {
   }
 
   void goodbyeMessage() {
+    print('\n──────────────────────────────────────────────\n');
     print("Thank you for taking the quiz!");
+    print('\n──────────────────────────────────────────────\n');
   }
 
   void loadingMessage() {
@@ -25,12 +27,20 @@ class TestView {
     print('Question ${index + 1}: ${question.display()}');
   }
 
-  void reviewIncorrectAnswers(List<Question> incorrectQuestions) {
+  void reviewIncorrectAnswers(Map<int, Question> incorrectQuestions, Map<Question, String> userAnswers) {
     if (incorrectQuestions.isEmpty) return;
-    print("\nReview Incorrect Answers:");
-    for (var question in incorrectQuestions) {
-      print('\n──────────────────────────────────────────────\n');
-      print('Incorrect: ${question.display()}');
+
+    print("\n📋 Review Incorrect Answers:");
+
+    for (var entry in incorrectQuestions.entries) {
+      int questionNumber = entry.key + 1;
+      Question question = entry.value;
+
+      print('\n──────────────────────────────────────────────');
+      print('Question $questionNumber:');
+      print(question.display());
+      print('❌ Your Answer: ${userAnswers[question]}');
+      print('Correct Answer: ${question.getCorrectAnswer()}');
     }
   }
 
@@ -62,7 +72,7 @@ class TestView {
 
   String displayCurrentAnswer(dynamic answer, int index) {
     print('\n──────────────────────────────────────────────');
-    print("\n→ Current answer for question $index : $answer");
+    print("\nYour previous answer for Question $index: \x1B[1;34m$answer\x1B[0m");
     return answer.toString();
   }
 
@@ -77,8 +87,8 @@ class TestView {
   }
 
   bool askUserToReviewIncorrect() {
-    print("\nWould you like to review incorrect answers? (yes/no)");
+    print("\nWould you like to review incorrect answers? [y]es or [n]o:");
     String response = getUserAnswer().toLowerCase();
-    return response == "yes";
+    return response == "yes" || response == "y";
   }
 }

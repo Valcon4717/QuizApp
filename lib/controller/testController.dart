@@ -8,7 +8,7 @@ class TestController {
 
   Future<void> startQuiz() async {
     _view.welcomeMessage();
-    
+
     _view.loadingMessage();
     List<Question> questions = await _service.fetchAllQuestions();
 
@@ -22,17 +22,16 @@ class TestController {
 
     Map<String, dynamic> results = _gradeQuiz(selectedQuestions, userAnswers);
     int score = results['score'];
-    List<Question> incorrectAnswers = results['incorrect'];
+    Map<int, Question> incorrectAnswers = results['incorrect'];
 
     _view.displayScore(score, numQuestions);
 
     if (incorrectAnswers.isNotEmpty && _view.askUserToReviewIncorrect()) {
-        _view.reviewIncorrectAnswers(incorrectAnswers);
+      _view.reviewIncorrectAnswers(incorrectAnswers, userAnswers);
     }
 
     _view.goodbyeMessage();
-}
-
+  }
 
   // Navigate through questions and return user answers
   Map<Question, String> _navigateQuestions(List<Question> questions) {
@@ -53,16 +52,16 @@ class TestController {
         case "p":
           if (index > 0) {
             index--;
-            _view.displayCurrentAnswer(userAnswers[questions[index]], index);
+            _view.displayCurrentAnswer(userAnswers[questions[index]], index+1);
           }
           break;
         default:
-        if (_isValidUserResponse(questions[index], userInput)) {
-          userAnswers[questions[index]] = userInput;
-          index++;
-        } else {
-          print("Invalid answer. Please enter a valid option.");
-        }
+          if (_isValidUserResponse(questions[index], userInput)) {
+            userAnswers[questions[index]] = userInput;
+            index++;
+          } else {
+            print("Invalid answer. Please enter a valid option.");
+          }
       }
     }
 
@@ -73,14 +72,16 @@ class TestController {
   Map<String, dynamic> _gradeQuiz(
       List<Question> questions, Map<Question, String> userAnswers) {
     int score = 0;
-    List<Question> incorrectAnswers = [];
+    Map<int, Question> incorrectAnswers = {};
 
-    // loop through questions and check responses
-    for (var question in questions) {
-      if (question.checkResponse(userAnswers[question] ?? "")) {
+    for (int i = 0; i < questions.length; i++) {
+      Question question = questions[i];
+      String userResponse = userAnswers[question] ?? "";
+
+      if (question.checkResponse(userResponse)) {
         score++;
       } else {
-        incorrectAnswers.add(question);
+        incorrectAnswers[i] = question;
       }
     }
 

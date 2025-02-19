@@ -34,6 +34,11 @@ class MultipleChoiceQuestion extends Question {
   }
 
   @override
+  String getCorrectAnswer() {
+    return options[correctAnswer - 1];
+  }
+
+  @override
   bool isValidAnswer(String response) {
     int? choice = int.tryParse(response);
     return choice != null && choice > 0 && choice <= options.length;

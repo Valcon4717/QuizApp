@@ -25,6 +25,11 @@ class FillInBlankQuestion extends Question {
   }
 
   @override
+  String getCorrectAnswer() {
+    return possibleAnswers.join(', ');
+  }
+
+  @override
   bool isValidAnswer(String response) {
     return response.isNotEmpty;
   }
