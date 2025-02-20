@@ -1,5 +1,8 @@
 import 'question.dart';
 
+/// A subclass of [Question] that represents a multiple-choice question.
+///
+/// It contains a stem (the question text), a list of options, and the index of the correct answer.
 class MultipleChoiceQuestion extends Question {
   List<String> options;
   int correctAnswer;
@@ -7,12 +10,13 @@ class MultipleChoiceQuestion extends Question {
   MultipleChoiceQuestion(String stem, this.options, this.correctAnswer)
       : super(stem, 1);
 
-  // Factory constructor to create a MultipleChoiceQuestion object from a JSON object
+  /// Creates a multiple-choice question from JSON.
   factory MultipleChoiceQuestion.fromJson(Map<String, dynamic> json) {
     return MultipleChoiceQuestion(
         json['stem'], List<String>.from(json['options']), json['answer']);
   }
 
+  /// Checks if the provided [response] is correct.
   @override
   bool checkResponse(Object response) {
     if (response is int) {
@@ -24,6 +28,7 @@ class MultipleChoiceQuestion extends Question {
     return false;
   }
 
+  /// Displays the question stem and options.
   @override
   String display() {
     StringBuffer displayString = StringBuffer("\n$stem\n");
@@ -33,11 +38,13 @@ class MultipleChoiceQuestion extends Question {
     return displayString.toString();
   }
 
+  /// Returns the correct answer as a string.
   @override
   String getCorrectAnswer() {
     return options[correctAnswer - 1];
   }
 
+  /// Validates if the provided [response] is a valid answer.
   @override
   bool isValidAnswer(String response) {
     int? choice = int.tryParse(response);

@@ -1,18 +1,29 @@
 import 'MultipleChoiceQuestion.dart';
 import 'FillInBlankQuestion.dart';
 
+/// Abstract class representing a question.
+///
+/// This class serves as a base for different types of questions
+/// such as multiple-choice and fill-in-the-blank.
 abstract class Question {
   String stem;
   int type;
 
   Question(this.stem, this.type);
 
+  /// Checks if the provided [response] is correct.
   bool checkResponse(Object response);
-  bool isValidAnswer(String response); 
+
+  /// Returns a string representation of the question.
   String display();
+
+  /// Validates if the provided [response] is a valid answer.
+  bool isValidAnswer(String response);
+
+  /// Returns the correct answer as a string.
   String getCorrectAnswer();
-  
-  // Serialize the question to JSON
+
+  /// Factory method to create a [Question] object from a JSON object.
   static Question fromJson(Map<String, dynamic> json) {
     switch (json['type']) {
       case 1:
