@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../controller/theme_controller.dart';
 import 'package:provider/provider.dart';
+import '../../controller/theme_controller.dart';
+import '../../controller/login_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,25 +15,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String? _errorMessage;
+  String? _usernameError;
+  String? _passwordError;
 
   @override
   Widget build(BuildContext context) {
+    final loginController = Provider.of<LoginController>(context);
     final themeController = Provider.of<ThemeController>(context);
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          scrolledUnderElevation: 0,
-          actions: [
-            IconButton(
-              icon: Icon(themeController.themeMode == ThemeMode.dark
-                  ? Icons.light_mode
-                  : Icons.dark_mode),
-              onPressed: themeController.toggleTheme,
-            ),
-            SizedBox(width: 10),
-          ],
-        ),
         body: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.0),
@@ -40,17 +30,16 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                SizedBox(height: 80.0),
-
-                // App logo or title
+                SizedBox(height: 150.0),
                 Image.asset(
                   themeController.themeMode == ThemeMode.dark
                       ? 'assets/icons/HoneyDarkComplex.png'
                       : 'assets/icons/HoneyLightComplex.png',
                   height: 130,
                 ),
+
                 // Login form
-                SizedBox(height: 8.0),
+                SizedBox(height: 10.0),
                 Text(
                   'Welcome to CodeHive',
                   style: TextStyle(
@@ -59,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Theme.of(context).colorScheme.secondaryContainer,
                   ),
                 ),
-                SizedBox(height: 8.0),
+                SizedBox(height: 15.0),
                 Text(
                   'Let\'s sign you in',
                   style: TextStyle(
@@ -68,40 +57,39 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Color(0xFFaa9988),
                   ),
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: 25.0),
                 // Username input
                 TextField(
                   controller: _usernameController,
                   decoration: InputDecoration(
                     labelText: 'Username',
                     border: OutlineInputBorder(),
+                    errorText: _usernameError,
                   ),
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: 15.0),
+
                 // Password input
                 TextField(
                   controller: _passwordController,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     border: OutlineInputBorder(),
+                    errorText: _passwordError,
                   ),
-                  obscureText: true, // Hide password text
+                  obscureText: true,
                 ),
-                SizedBox(height: 16.0),
-                // Show error message if available
-                if (_errorMessage != null)
-                  Text(
-                    _errorMessage!,
-                    style: TextStyle(color: Colors.red),
-                  ),
-                SizedBox(height: 16.0),
-
-                // Username input
+                SizedBox(height: 15.0),
 
                 // Login button
-                ElevatedButton(
-                  onPressed: _handleLogin,
-                  child: Text('Log In'),
+                SizedBox(
+                  width: 350,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await _handleLogin(loginController);
+                    },
+                    child: const Text("Log In"),
+                  ),
                 ),
               ],
             ),
@@ -109,29 +97,53 @@ class _LoginScreenState extends State<LoginScreen> {
         ));
   }
 
-  void _handleLogin() {
-    final username = _usernameController.text;
-    final password = _passwordController.text;
+  Future<void> _handleLogin(LoginController loginController) async {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
 
-    // Clear any previous error message
+    // Clear previous error messages
     setState(() {
-      _errorMessage = null;
+      _usernameError = null;
+      _passwordError = null;
     });
 
     // Validate input
-    if (username.isEmpty || password.isEmpty) {
+    if (username.isEmpty && password.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter both username and password.';
+        _usernameError = 'Please enter username.';
+        _passwordError = 'Please enter password.';
+      });
+      return;
+    } else if (username.isEmpty) {
+      setState(() {
+        _usernameError = 'Please enter username.';
+      });
+      return;
+    } else if (password.isEmpty) {
+      setState(() {
+        _passwordError = 'Please enter password.';
       });
       return;
     }
 
-    // Call your login API here
-    // On success, navigate to either the welcome/setup screen or home screen based on user status.
-    // On failure, set an error message.
+    // Call the authentication logic in the LoginController
+    bool success = await loginController.login(username, password);
 
-    print('Logging in with Username: $username, Password: $password');
-    // Example: Navigator.pushReplacementNamed(context, '/home');
+    // Check if the widget is still mounted before navigating
+    if (!mounted) return;
+
+    if (success) {
+      if (loginController.userProfile == null) {
+        Navigator.pushReplacementNamed(context, '/welcome');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } else {
+      setState(() {
+        _usernameError = loginController.errorMessage;
+        _passwordError = loginController.errorMessage;
+      });
+    }
   }
 
   @override

@@ -1,20 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import 'view/screens/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'view/screens/login_screen.dart';
+import 'view/screens/home_screen.dart';
+import 'view/screens/welcome_screen.dart';
 import 'controller/theme_controller.dart';
+import 'controller/login_controller.dart';
+import 'model/authentication_service.dart';
 
-void main() {
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => ThemeController()),
-    ],
-    child: QuizApp(),
-  ));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final username = prefs.getString('username');
+  final isSetupComplete = prefs.getBool('isSetupComplete') ?? false;
+
+  Widget firstScreen;
+  if (username != null) {
+    firstScreen = isSetupComplete ? const HomeScreen() : const WelcomeScreen();
+  } else {
+    firstScreen = const LoginScreen();
+  }
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeController()),
+        ChangeNotifierProvider(
+          create: (_) =>
+              LoginController(authService: AuthenticationService()),
+        ),
+      ],
+      child: QuizApp(firstScreen: firstScreen),
+    ),
+  );
 }
 
 class QuizApp extends StatelessWidget {
-  const QuizApp({super.key});
+  final Widget firstScreen;
+  const QuizApp({super.key, required this.firstScreen});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +48,7 @@ class QuizApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xfffb9f28),
+          seedColor: const Color(0xffd77c04),
         ).copyWith(
           primaryContainer: const Color(0xffd77c04),
           onPrimaryContainer: const Color(0xfff4eee6),
@@ -38,6 +61,7 @@ class QuizApp extends StatelessWidget {
           surface: const Color(0xfff4eee6),
           onSurface: const Color(0xff1b1713),
         ),
+        scaffoldBackgroundColor: const Color(0xff1b1713),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
@@ -56,9 +80,15 @@ class QuizApp extends StatelessWidget {
           surface: const Color(0xff19130b),
           onSurface: const Color(0xffece8e4),
         ),
+        scaffoldBackgroundColor: const Color(0xff19130b),
       ),
       themeMode: themeController.themeMode,
-      home: const LoginScreen(),
+      home: firstScreen,
+      routes: {
+        '/welcome': (context) => const WelcomeScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const HomeScreen(),
+      },
     );
   }
 }

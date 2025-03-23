@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.3.0
   provider: ^6.1.2
+  shared_preferences: ^2.5.2
+  smooth_page_indicator: ^1.2.1
 
 dev_dependencies:
   flutter_test:
@@ -59,3 +61,10 @@ flutter:
     - assets/icons/HoneyDarkMinimal.png
     - assets/icons/HoneyLightComplex.png
     - assets/icons/HoneyLightMinimal.png
+
+    - assets/images/DevDark.png
+    - assets/images/DevLight.png
+    - assets/images/GrowDark.png
+    - assets/images/GrowLight.png
+    - assets/images/QuizDark.png
+    - assets/images/QuizLight.png
