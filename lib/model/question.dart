@@ -23,6 +23,9 @@ abstract class Question {
   /// Returns the correct answer as a string.
   String getCorrectAnswer();
 
+  /// Returns the figure associated with the question, if any.
+  String? get figure => null;
+
   /// Factory method to create a [Question] object from a JSON object.
   static Question fromJson(Map<String, dynamic> json) {
     switch (json['type']) {

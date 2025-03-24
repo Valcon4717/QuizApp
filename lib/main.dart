@@ -4,18 +4,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'view/screens/login_screen.dart';
 import 'view/screens/home_screen.dart';
 import 'view/screens/welcome_screen.dart';
+import 'view/screens/quiz_screen.dart';
 import 'controller/theme_controller.dart';
 import 'controller/login_controller.dart';
+import 'controller/test_controller.dart';
+import 'view/screens/result_screen.dart';
 import 'model/authentication_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final username = prefs.getString('username');
+  final pin = prefs.getString('pin');
   final isSetupComplete = prefs.getBool('isSetupComplete') ?? false;
 
   Widget firstScreen;
-  if (username != null) {
+  if (username != null && pin != null && pin.isNotEmpty) {
     firstScreen = isSetupComplete ? const HomeScreen() : const WelcomeScreen();
   } else {
     firstScreen = const LoginScreen();
@@ -25,6 +29,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeController()),
+        ChangeNotifierProvider(create:(context) => TestController()),
         ChangeNotifierProvider(
           create: (_) =>
               LoginController(authService: AuthenticationService()),
@@ -44,7 +49,7 @@ class QuizApp extends StatelessWidget {
     final themeController = Provider.of<ThemeController>(context);
 
     return MaterialApp(
-      title: 'Quiz App',
+      title: 'CodeHive',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -56,12 +61,12 @@ class QuizApp extends StatelessWidget {
           onSecondaryContainer: const Color(0xfff4eee6),
           tertiaryContainer: const Color(0xffebb166),
           onTertiaryContainer: const Color(0xff1b1713),
+          secondary: const Color(0xffece7de),
           error: const Color(0xffb00020),
           onError: const Color(0xfff4eee6),
           surface: const Color(0xfff4eee6),
           onSurface: const Color(0xff1b1713),
         ),
-        scaffoldBackgroundColor: const Color(0xff1b1713),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
@@ -75,12 +80,12 @@ class QuizApp extends StatelessWidget {
           onSecondaryContainer: const Color(0xffece8e4),
           tertiaryContainer: const Color(0xff996014),
           onTertiaryContainer: const Color(0xff19130b),
+          secondary: const Color(0xff201a13),
           error: const Color(0xffcf6679),
           onError: const Color(0xff19130b),
           surface: const Color(0xff19130b),
           onSurface: const Color(0xffece8e4),
         ),
-        scaffoldBackgroundColor: const Color(0xff19130b),
       ),
       themeMode: themeController.themeMode,
       home: firstScreen,
@@ -88,6 +93,8 @@ class QuizApp extends StatelessWidget {
         '/welcome': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
+        '/quiz': (context) => const QuizScreen(),
+        '/results': (context) => const ResultsScreen(),
       },
     );
   }

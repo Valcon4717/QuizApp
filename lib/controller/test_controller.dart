@@ -1,207 +1,92 @@
-import 'dart:io';
+import 'package:flutter/material.dart';
 import '../model/test_service.dart';
 import '../model/question.dart';
-import '../view/test_view.dart';
 
-/// Controls the quiz flow and user interaction, including fetching questions,
-/// navigating through them, and grading the quiz.
-class TestController {
+class TestController extends ChangeNotifier {
   final TestServices _service = TestServices();
-  final TestView _view = TestView();
 
-  /// Starts the quiz process by fetching questions, displaying them,
-  /// collecting responses, and grading the quiz.
-  Future<void> startQuiz() async {
-    _view.welcomeMessage();
-    _view.loadingMessage();
+  List<Question> _questions = [];
+  Map<Question, String> _userAnswers = {};
+  int _score = 0;
+  Map<int, Question> _incorrectAnswers = {};
 
-    // Fetch all questions from the service
-    List<Question> questions = await _service.fetchAllQuestions();
-    int numQuestions = _getNumQuestions(questions.length);
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+  List<Question> get questions => _questions;
+  Map<Question, String> get userAnswers => _userAnswers;
+  int get score => _score;
+  Map<int, Question> get incorrectAnswers => _incorrectAnswers;
 
-    // Shuffle the questions and select the specified number
-    questions.shuffle();
-    List<Question> selectedQuestions = questions.take(numQuestions).toList();
+  /// Loads the quiz questions from the service using the provided login credentials.
+  /// If [numQuestions] is specified and valid, a subset is used; otherwise, all fetched questions are used.
+  Future<void> loadQuiz({
+    int? numQuestions,
+    required String username,
+    required String pin,
+    bool isMultipleChoice = true,
+    bool isFillInBlank = false,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
 
-    // Navigate through the questions and collect user responses
-    Map<Question, String> userAnswers = _navigateQuestions(selectedQuestions);
+    // Fetch all questions with authentication info.
+    List<Question> fetchedQuestions =
+        await _service.fetchAllQuestions(username, pin);
 
-    // Grade the quiz and get the score and incorrect answers
-    Map<String, dynamic> results = _gradeQuiz(selectedQuestions, userAnswers);
-    int score = results['score'];
-    Map<int, Question> incorrectAnswers = results['incorrect'];
+    // Filter the questions based on the user’s preferences.
+    List<Question> filtered = fetchedQuestions.where((q) {
+      bool typeMatch = false;
+      if (q.type == 1 && isMultipleChoice) typeMatch = true;
+      if (q.type == 2 && isFillInBlank) typeMatch = true;
+      return typeMatch;
+    }).toList();
 
-    _view.displayScore(score, numQuestions);
+    filtered.shuffle();
 
-    // Display the correct answers for incorrect responses
-    if (incorrectAnswers.isNotEmpty && _view.askUserToReviewIncorrect()) {
-      _view.reviewIncorrectAnswers(incorrectAnswers, userAnswers);
+    if (numQuestions != null &&
+        numQuestions > 0 &&
+        numQuestions <= filtered.length) {
+      _questions = filtered.take(numQuestions).toList();
+    } else {
+      _questions = filtered;
     }
 
-    _view.goodbyeMessage();
+    _isLoading = false;
+    notifyListeners();
   }
 
-  /// Navigates through the [questions], allowing the user to answer or skip.
-  ///
-  /// Returns a `map` of questions and their corresponding user answers.
-  Map<Question, String> _navigateQuestions(List<Question> questions) {
-    int index = 0;
-    Map<Question, String> userAnswers = {};
-
-    while (index < questions.length) {
-      _view.displayQuestion(questions[index], index);
-      String userInput = _view.getUserNavigation();
-
-      switch (userInput) {
-        case "next":
-        case "n":
-        case "":
-          if (index < questions.length - 1) {
-            index++;
-          } else {
-            // Check for unanswered questions before ending the quiz
-            if (_handleEndOfQuiz(questions, userAnswers)) return userAnswers;
-            index = questions.indexWhere((q) => userAnswers[q] == null);
-          }
-          break;
-        case "prev":
-        case "p":
-          if (index > 0) {
-            index--;
-            // Display the previous answer if available
-            _view.displayCurrentAnswer(
-                _getAnswerOrDefault(userAnswers, questions[index]), index + 1);
-          }
-          break;
-        default:
-          if (_isValidUserResponse(questions[index], userInput)) {
-            // Store the user's answer
-            userAnswers[questions[index]] = userInput;
-            if (index < questions.length - 1) {
-              index++;
-            } else {
-              if (_handleEndOfQuiz(questions, userAnswers)) return userAnswers;
-              index = questions.indexWhere((q) => userAnswers[q] == null);
-            }
-          } else {
-            _view.invalidAnswer(
-                _getAnswerOrDefault(userAnswers, questions[index]), index + 1);
-          }
-      }
-    }
-
-    return userAnswers;
+  /// Records the user's answer for a given [question].
+  void recordAnswer(Question question, String answer) {
+    _userAnswers[question] = answer;
+    notifyListeners();
   }
 
-  /// Handles the end of the quiz by checking for unanswered questions
-  ///
-  /// Returns `true` if the quiz can be ended, otherwise `false`.
-  bool _handleEndOfQuiz(
-      List<Question> questions, Map<Question, String> userAnswers) {
-    if (_checkForUnansweredQuestions(questions, userAnswers)) {
-      if (_endQuiz(questions, userAnswers)) {
-        _markUnansweredQuestions(questions, userAnswers);
-        return true;
-      }
-      return false;
-    }
-    return true;
-  }
+  /// Grades the quiz by comparing user answers with the correct answers.
+  /// Calculates a score and collects incorrect questions.
+  void gradeQuiz() {
+    int calculatedScore = 0;
+    Map<int, Question> incorrect = {};
 
-  /// Marks unanswered questions with a default response.
-  void _markUnansweredQuestions(
-      List<Question> questions, Map<Question, String> userAnswers) {
-    for (var question in questions) {
-      userAnswers.putIfAbsent(question, () => "No answer");
-    }
-  }
-
-  /// Retrieves the user's answer for a question,
-  /// or a default message if not answered.
-  String _getAnswerOrDefault(
-      Map<Question, String> userAnswers, Question question) {
-    return userAnswers[question] ?? "No answer";
-  }
-
-  /// Grades the quiz by checking [userAnswers] against correct answers.
-  ///
-  /// Returns a `map` containing the score and a list of incorrect answers.
-  Map<String, dynamic> _gradeQuiz(
-      List<Question> questions, Map<Question, String> userAnswers) {
-    int score = 0;
-    Map<int, Question> incorrectAnswers = {};
-
-    for (int i = 0; i < questions.length; i++) {
-      Question question = questions[i];
-      String userResponse = _getAnswerOrDefault(userAnswers, question);
-
-      if (question.checkResponse(userResponse)) {
-        score++;
+    for (int i = 0; i < _questions.length; i++) {
+      Question q = _questions[i];
+      String userResponse = _userAnswers[q] ?? "No answer";
+      if (q.checkResponse(userResponse)) {
+        calculatedScore++;
       } else {
-        incorrectAnswers[i] = question;
+        incorrect[i] = q;
       }
     }
-
-    return {'score': score, 'incorrect': incorrectAnswers};
+    _score = calculatedScore;
+    _incorrectAnswers = incorrect;
+    notifyListeners();
   }
 
-  /// Checks if the user's [response] is valid for the given [question].
-  ///
-  /// Returns `true` if the response is valid, otherwise `false`.
-  bool _isValidUserResponse(Question question, String response) {
-    return question.isValidAnswer(response);
-  }
-
-  /// Checks if there are any unanswered questions.
-  ///
-  /// Returns `true` if there are unanswered questions, otherwise `false`.
-  bool _checkForUnansweredQuestions(
-      List<Question> questions, Map<Question, String?> userAnswers) {
-    return questions.any((q) => userAnswers[q] == null);
-  }
-
-  /// Prompts the user to confirm if they want to end the quiz
-  /// even if there are unanswered [questions].
-  ///
-  /// Returns `true` if the user confirms, otherwise `false`.
-  bool _endQuiz(List<Question> questions, Map<Question, String?> userAnswers) {
-    int unansweredCount = questions.where((q) => userAnswers[q] == null).length;
-
-    if (unansweredCount > 0) {
-      print(
-          "\n\x1B[1;33m⚠️ You have $unansweredCount unanswered questions ⚠️\x1B[0m");
-      if (_view.getYesOrNo("Would you still like to end the quiz?")) {
-        return true;
-      } else {
-        print("\n\x1B[1;36mContinuing the quiz...\x1B[0m");
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /// Prompts the user for the number of questions to answer
-  ///
-  /// Returns the number of questions as an `int`.
-  int _getNumQuestions(int totalAvailableQuestions) {
-    int? numQuestions;
-
-    do {
-      stdout.write(
-          "\nHow many questions would you like to answer?\n(Max: $totalAvailableQuestions, defaults 5 if you enter a space): ");
-      String? input = stdin.readLineSync();
-
-      numQuestions = (input == " ") ? 5 : int.tryParse(input ?? "");
-
-      if (numQuestions == null ||
-          numQuestions <= 0 ||
-          numQuestions > totalAvailableQuestions) {
-        print(
-            "\x1B[1;31mInvalid input\x1B[0m. Please enter a number between 1 and $totalAvailableQuestions.");
-        numQuestions = null;
-      }
-    } while (numQuestions == null);
-
-    return numQuestions;
+  /// Resets the quiz data.
+  void resetQuiz() {
+    _questions = [];
+    _userAnswers = {};
+    _score = 0;
+    _incorrectAnswers = {};
+    notifyListeners();
   }
 }

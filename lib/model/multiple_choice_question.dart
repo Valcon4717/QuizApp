@@ -6,14 +6,15 @@ import 'question.dart';
 class MultipleChoiceQuestion extends Question {
   List<String> options;
   int correctAnswer;
+  String? figure;
 
-  MultipleChoiceQuestion(String stem, this.options, this.correctAnswer)
+  MultipleChoiceQuestion(String stem, this.options, this.correctAnswer, this.figure)
       : super(stem, 1);
 
   /// Creates a multiple-choice question from JSON.
   factory MultipleChoiceQuestion.fromJson(Map<String, dynamic> json) {
     return MultipleChoiceQuestion(
-        json['stem'], List<String>.from(json['options']), json['answer']);
+        json['stem'], List<String>.from(json['options']), json['answer'], json['figure']);
   }
 
   /// Checks if the provided [response] is correct.
@@ -32,6 +33,9 @@ class MultipleChoiceQuestion extends Question {
   @override
   String display() {
     StringBuffer displayString = StringBuffer("\n$stem\n");
+    if (figure != null && figure!.isNotEmpty) {
+      displayString.writeln("Figure: $figure");
+    }
     options.asMap().forEach((index, option) {
       displayString.writeln('  ${index + 1}. $option');
     });

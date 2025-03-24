@@ -17,7 +17,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Initialize pagesData here so we can use Theme.of(context)
     pagesData = [
       {
         "image": Theme.of(context).brightness == Brightness.dark

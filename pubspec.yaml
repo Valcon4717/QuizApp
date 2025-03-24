@@ -38,6 +38,7 @@ dependencies:
   provider: ^6.1.2
   shared_preferences: ^2.5.2
   smooth_page_indicator: ^1.2.1
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
@@ -54,6 +55,11 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/HoneyLightComplex.png"
+
 flutter:
   uses-material-design: true
   assets:
@@ -68,3 +74,8 @@ flutter:
     - assets/images/GrowLight.png
     - assets/images/QuizDark.png
     - assets/images/QuizLight.png
+  
+  fonts:
+    - family: FiraCode
+      fonts:
+        - asset: assets/fonts/FiraCode-VariableFont_wght.ttf

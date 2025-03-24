@@ -5,12 +5,15 @@ import 'question.dart';
 /// It contains a stem (the question text) and a list of possible answers.
 class FillInBlankQuestion extends Question {
   List<String> possibleAnswers;
+  String? figure;
 
-  FillInBlankQuestion(String stem, this.possibleAnswers) : super(stem, 2);
+  FillInBlankQuestion(String stem, this.possibleAnswers, this.figure)
+      : super(stem, 2);
 
   /// Creates a fill-in-the-blank question from JSON.
   factory FillInBlankQuestion.fromJson(Map<String, dynamic> json) {
-    return FillInBlankQuestion(json['stem'], List<String>.from(json['answer']));
+    return FillInBlankQuestion(
+        json['stem'], List<String>.from(json['answer']), json['figure']);
   }
 
   /// Checks if the provided [response] is correct.
@@ -25,8 +28,13 @@ class FillInBlankQuestion extends Question {
 
   /// Displays the question stem.
   @override
+  @override
   String display() {
-    return '\n$stem';
+    String result = "\n$stem";
+    if (figure != null && figure!.isNotEmpty) {
+      result += "\nFigure: $figure";
+    }
+    return result;
   }
 
   /// Returns the correct answer as a string.
