@@ -241,60 +241,114 @@ class _QuizScreenState extends State<QuizScreen> {
             : Column(
                 children: [
                   Expanded(
-                    child: PageView.builder(
+                    child: Padding(
+                        padding: const EdgeInsets.only(top: 20.0, left: 30.0, right: 30.0),
+                      child: PageView.builder(
                       controller: _pageController,
                       itemCount: testController.questions.length,
                       onPageChanged: (index) {
                         setState(() {
-                          _currentPage = index;
+                        _currentPage = index;
                         });
                       },
                       itemBuilder: (context, index) {
                         final question = testController.questions[index];
-                        return Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Question ${index + 1}",
-                                  style:
-                                      Theme.of(context).textTheme.headlineSmall,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  question.stem,
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
-                                const SizedBox(height: 16),
-                                if (question.figure != null &&
-                                    question.figure!.isNotEmpty)
-                                  Center(
-                                    child: Image.network(
-                                      'https://www.cs.utep.edu/cheon/cs4381/homework/quiz/figure.php?name=${question.figure}',
-                                      height: 200,
-                                    ),
-                                  ),
-                                const SizedBox(height: 24),
-                                if (question is MultipleChoiceQuestion)
-                                  _buildMultipleChoiceOptions(question)
-                                else if (question is FillInBlankQuestion)
-                                  TextField(
-                                    onSubmitted: _onAnswerSubmitted,
-                                    decoration: const InputDecoration(
-                                      labelText: "Your answer",
-                                      border: OutlineInputBorder(),
-                                    ),
-                                  ),
-                              ],
+                        final orientation = MediaQuery.of(context).orientation;
+
+                        // Build the question portion
+                        Widget questionContent = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                          "Question ${index + 1}",
+                          style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                          question.stem,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          const SizedBox(height: 16),
+                          if (question.figure != null &&
+                            question.figure!.isNotEmpty)
+                          Center(
+                            child: Image.network(
+                            'https://www.cs.utep.edu/cheon/cs4381/homework/quiz/figure.php?name=${question.figure}',
+                            height: 200,
                             ),
                           ),
+                        ],
                         );
+
+                        // Build the answer portion
+                        Widget answerContent;
+                        if (question is MultipleChoiceQuestion) {
+                        answerContent = _buildMultipleChoiceOptions(question);
+                        } else if (question is FillInBlankQuestion) {
+                        answerContent = TextField(
+                          onSubmitted: _onAnswerSubmitted,
+                          decoration: const InputDecoration(
+                          labelText: "Your answer",
+                          border: OutlineInputBorder(),
+                          ),
+                        );
+                        } else {
+                        // Fallback or unknown question type
+                        answerContent = const Text("Unknown question type.");
+                        }
+
+                        // In portrait mode, stack question above answer; in landscape, place side by side
+                        if (orientation == Orientation.portrait) {
+                        return SingleChildScrollView(
+                          child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            questionContent,
+                            const SizedBox(height: 24),
+                            answerContent,
+                          ],
+                          ),
+                        );
+                        } else {
+                        
+                        // Landscape mode: place question and answer side by side
+                        return SingleChildScrollView(
+                          child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Question portion
+                            Expanded(
+                            flex: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: questionContent,
+                            ),
+                            ),
+                            // Answers portion
+                            Expanded(
+                            flex: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Column(
+                              crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 24),
+                                answerContent,
+                              ],
+                              ),
+                            ),
+                            ),
+                          ],
+                          ),
+                        );
+                        }
                       },
+                      ),
                     ),
-                  ),
-                  // Navigation controls.
+                    ),
+                  
+                  // Navigation controls
                   Padding(
                     padding: const EdgeInsets.all(35.0),
                     child: Row(
