@@ -7,6 +7,7 @@ import '../../model/multiple_choice_question.dart';
 import '../../model/fill_in_blank_question.dart';
 import '../../model/question.dart';
 
+/// QuizScreen is a StatefulWidget that provides a quiz interface
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
 
@@ -14,6 +15,7 @@ class QuizScreen extends StatefulWidget {
   State<QuizScreen> createState() => _QuizScreenState();
 }
 
+/// _QuizScreenState is the state class for QuizScreen
 class _QuizScreenState extends State<QuizScreen> {
   late TestController testController;
   final PageController _pageController = PageController();
@@ -28,6 +30,7 @@ class _QuizScreenState extends State<QuizScreen> {
     _startQuiz();
   }
 
+  // _startQuiz initializes the quiz by loading questions and user data.
   Future<void> _startQuiz() async {
     final prefs = await SharedPreferences.getInstance();
     final username = prefs.getString('username') ?? '';
@@ -38,15 +41,16 @@ class _QuizScreenState extends State<QuizScreen> {
     log("QuizScreen: Number of questions: $numQuestions", name: "QuizScreen");
     final isMultipleChoice = prefs.getBool('isMultipleChoice') ?? true;
     final isFillInBlank = prefs.getBool('isFillInBlank') ?? false;
-
     debugPrint(
         "QuizScreen: Starting quiz with username: $username and pin: $pin");
 
+    // If username or pin is empty, navigate to login screen.
     if (username.isEmpty || pin.isEmpty) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
 
+    // Load quiz questions based on user preferences
     await testController.loadQuiz(
       numQuestions: numQuestions,
       username: username,
@@ -59,13 +63,13 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
-  // Handles the submission of answers for fill-in-the-blank questions.
+  // Handles the submission of answers for fill-in-the-blank questions
   void _onAnswerSubmitted(String answer) {
     final currentQuestion = testController.questions[_currentPage];
     testController.recordAnswer(currentQuestion, answer);
   }
 
-  // Navigates to previous or next question.
+  // Navigates to previous or next question
   void _onNextOrPrev(bool isNext) {
     if (isNext) {
       if (_currentPage < testController.questions.length - 1) {
@@ -82,7 +86,7 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  // When the user finishes the quiz.
+  // Handles the submission of the quiz
   void _onSubmitQuiz() {
     bool hasUnanswered = testController.questions
         .any((q) => testController.userAnswers[q] == null);
@@ -96,17 +100,18 @@ class _QuizScreenState extends State<QuizScreen> {
               ? "There are unanswered questions. Are you sure you want to submit the quiz, or would you like to continue answering?"
               : "Are you sure you want to submit the quiz?"),
           actions: [
-            // Continue Quiz button.
+            // Continue Quiz button
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Dismiss dialog, continue quiz.
+                Navigator.pop(context);
               },
               child: const Text("Continue Quiz"),
             ),
-            // Submit button.
+
+            // Submit button
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Dismiss dialog.
+                Navigator.pop(context);
                 testController.gradeQuiz();
                 final int score = testController.score;
                 final int total = testController.questions.length;
@@ -130,7 +135,8 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  // Builds the multiple choice options for a question.
+  // Builds the multiple choice options for a question
+  /// [question] is the MultipleChoiceQuestion object
   Widget _buildMultipleChoiceOptions(MultipleChoiceQuestion question) {
     return StatefulBuilder(
       builder: (context, setState) {
@@ -156,14 +162,13 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
+  // Handles the back button press to confirm exit
   @override
   Widget build(BuildContext context) {
-    // Replace WillPopScope with the new PopScope widget.
     return PopScope(
       canPop: false,
       // ignore: deprecated_member_use
       onPopInvoked: (didPop) async {
-        // Show a dialog asking if the user wants to quit or continue.
         final shouldQuit = await showDialog<bool>(
           context: context,
           builder: (context) {
@@ -175,13 +180,13 @@ class _QuizScreenState extends State<QuizScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(false); // Continue quiz.
+                    Navigator.of(context).pop(false);
                   },
                   child: const Text("Continue Quiz"),
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(true); // Quit quiz.
+                    Navigator.of(context).pop(true);
                   },
                   child: const Text("Quit"),
                 ),
@@ -263,7 +268,6 @@ class _QuizScreenState extends State<QuizScreen> {
                                   style: Theme.of(context).textTheme.bodyLarge,
                                 ),
                                 const SizedBox(height: 16),
-                                // Display the figure if available.
                                 if (question.figure != null &&
                                     question.figure!.isNotEmpty)
                                   Center(
@@ -273,7 +277,6 @@ class _QuizScreenState extends State<QuizScreen> {
                                     ),
                                   ),
                                 const SizedBox(height: 24),
-                                // Show radio buttons for multiple choice or a TextField for fill-in-the-blank.
                                 if (question is MultipleChoiceQuestion)
                                   _buildMultipleChoiceOptions(question)
                                 else if (question is FillInBlankQuestion)

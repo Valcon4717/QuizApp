@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../controller/theme_controller.dart';
 import '../../controller/login_controller.dart';
 
+/// LoginScreen is a StatefulWidget that provides a login interface
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -10,11 +11,14 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+/// _LoginScreenState is the state class for LoginScreen
+/// It manages the state of the login form and handles user input
 class _LoginScreenState extends State<LoginScreen> {
   // Controllers to capture user input
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _pinController = TextEditingController();
 
+  // Error messages for the input fields
   String? _usernameError;
   String? _pinError;
 
@@ -22,11 +26,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final loginController = Provider.of<LoginController>(context);
     final themeController = Provider.of<ThemeController>(context);
+
     return Scaffold(
         body: Center(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.0),
-        // Center the content vertically
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
@@ -100,6 +104,12 @@ class _LoginScreenState extends State<LoginScreen> {
     ));
   }
 
+  /// Handles the login process by validating the input fields.
+  ///
+  /// If login is successful, navigates to the appropriate screen
+  /// If login fails, displays error messages
+  ///
+  /// [loginController] is the instance of LoginController
   Future<void> _handleLogin(LoginController loginController) async {
     final username = _usernameController.text.trim();
     final pin = _pinController.text.trim();
@@ -135,6 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // Check if the widget is still mounted before navigating
     if (!mounted) return;
 
+    // If login is successful, navigate to the appropriate screen
     if (success) {
       if (loginController.userProfile == null) {
         Navigator.pushReplacementNamed(context, '/welcome');
@@ -142,6 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacementNamed(context, '/home');
       }
     } else {
+      // If login fails, display error messages
       setState(() {
         _usernameError = loginController.errorMessage;
         _pinError = loginController.errorMessage;
@@ -149,6 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// Dispose the controllers to free up resources
   @override
   void dispose() {
     _usernameController.dispose();

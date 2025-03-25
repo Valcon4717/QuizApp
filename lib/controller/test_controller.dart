@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../model/test_service.dart';
 import '../model/question.dart';
 
+/// TestController is a ChangeNotifier that manages the quiz state
+/// It handles loading questions, recording answers, grading the quiz,
+/// and resetting the quiz data.
 class TestController extends ChangeNotifier {
   final TestServices _service = TestServices();
 
@@ -17,8 +20,9 @@ class TestController extends ChangeNotifier {
   int get score => _score;
   Map<int, Question> get incorrectAnswers => _incorrectAnswers;
 
-  /// Loads the quiz questions from the service using the provided login credentials.
-  /// If [numQuestions] is specified and valid, a subset is used; otherwise, all fetched questions are used.
+  /// Loads the quiz questions from the service using the provided login credentials
+  /// and filters them based on the user's preferences given [isMultipleChoice] and
+  /// [isFillInBlank]
   Future<void> loadQuiz({
     int? numQuestions,
     required String username,
@@ -29,11 +33,11 @@ class TestController extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // Fetch all questions with authentication info.
+    // Fetch all questions with authentication info
     List<Question> fetchedQuestions =
         await _service.fetchAllQuestions(username, pin);
 
-    // Filter the questions based on the user’s preferences.
+    // Filter the questions based on the user’s preferences
     List<Question> filtered = fetchedQuestions.where((q) {
       bool typeMatch = false;
       if (q.type == 1 && isMultipleChoice) typeMatch = true;
@@ -55,14 +59,24 @@ class TestController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Records the user's answer for a given [question].
+  /// getAvailableQuestionCount() returns the number of available questions
+  /// given [username] and [pin]
+  Future<int> getAvailableQuestionCount({
+    required String username,
+    required String pin,
+  }) async {
+    List<Question> fetchedQuestions =
+        await _service.fetchAllQuestions(username, pin);
+    return fetchedQuestions.length;
+  }
+
+  /// Records the user's answer for a given [question] and [answer]
   void recordAnswer(Question question, String answer) {
     _userAnswers[question] = answer;
     notifyListeners();
   }
 
-  /// Grades the quiz by comparing user answers with the correct answers.
-  /// Calculates a score and collects incorrect questions.
+  /// gradeQuiz() grades the quiz by checking each question's answer
   void gradeQuiz() {
     int calculatedScore = 0;
     Map<int, Question> incorrect = {};
@@ -81,7 +95,7 @@ class TestController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Resets the quiz data.
+  /// Resets the quiz data
   void resetQuiz() {
     _questions = [];
     _userAnswers = {};

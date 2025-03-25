@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+/// WelcomeScreen is a StatefulWidget that provides a welcome interface
+/// for the app. It guides users through the app's features and
+/// encourages them to start using it.
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -42,12 +45,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     ];
   }
 
+  // _completeSetup is called when the user completes the setup process
+  // It saves the setup completion status in shared preferences.
   Future<void> _completeSetup(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isSetupComplete', true);
     Navigator.pushReplacementNamed(context, '/home');
   }
 
+  // _onNextPressed is called when the user presses the "Next" button
   void _onNextPressed() {
     if (_currentIndex < pagesData.length - 1) {
       _pageController.nextPage(
@@ -59,6 +65,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
+  // _onPageChanged is called when the page changes in the PageView
   void _onPageChanged(int index) {
     setState(() {
       _currentIndex = index;
@@ -71,7 +78,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Expanded PageView
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -87,7 +93,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Display the image; replace with your own assets
                         Image.asset(
                           data["image"]!,
                           height: 200,
@@ -113,7 +118,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 },
               ),
             ),
-            // Dot indicators
+
+            // Dot indicator
             SmoothPageIndicator(
               controller: _pageController,
               count: pagesData.length,
@@ -124,7 +130,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            // Bottom button
+
+            // Next button
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 24.0,

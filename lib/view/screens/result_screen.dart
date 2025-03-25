@@ -4,6 +4,9 @@ import '../../model/multiple_choice_question.dart';
 import '../../controller/test_controller.dart';
 import '../../model/question.dart';
 
+/// ResultsScreen is a StatelessWidget that displays the results of the quiz
+/// It shows the score, total questions, and details of incorrect answers
+/// It also provides a button to return to the home screen
 class ResultsScreen extends StatelessWidget {
   const ResultsScreen({super.key});
 
@@ -18,7 +21,6 @@ class ResultsScreen extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // Fixed header area
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -55,7 +57,6 @@ class ResultsScreen extends StatelessWidget {
                       final Question question = incorrect[questionIndex]!;
                       final String userAnswerRaw =
                           userAnswers[question] ?? "No answer";
-                      // Convert numeric answer to option text if multiple choice
                       String userAnswerDisplay = userAnswerRaw;
 
                       if (question is MultipleChoiceQuestion) {
@@ -117,7 +118,6 @@ class ResultsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-          // "Return Home" button at the bottom
           SliverToBoxAdapter(
             child: Padding(
               padding:
