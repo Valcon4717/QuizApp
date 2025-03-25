@@ -272,9 +272,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     final enteredValue = int.tryParse(value);
                                     if (enteredValue == null ||
                                         enteredValue <= 0 ||
-                                        enteredValue >= availableCount) {
+                                        enteredValue > availableCount) {
                                       _numError =
-                                          "must be > 0 and < $availableCount";
+                                          "must be > 0 and <= $availableCount";
                                     } else {
                                       _numError = null;
                                       numQuestions = enteredValue;
